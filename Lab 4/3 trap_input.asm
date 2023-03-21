@@ -1,0 +1,143 @@
+	.ORIG x4000				; We are starting at x4000 because of trap_vector_input.asm, which defines vector x40 as being stored at x4000
+
+; See bottom for details on register functions and variables
+; REMEMBER: stuff in parentheses are explanations, NOT steps. Stuff not in parentheses are literal steps you can take. 
+; REMEMBER: you do NOT have to use this guide if you feel confident you can do the lab without it. All that matters is you get the right output. 
+; NOTE: While we are using a stack in this lab, it works differently than future stacks will. We do not have an explicit frame pointer, and have a simple stack pointer that we use for offsets. 
+
+	STI R6, STACK_R6		; Store R6 to the address held at STACK_R6 (STORE R6 into x46FA on the stack) (HINT: Do we use ST or STI for this? Why?)
+	LD R6, STACK			; Load STACK into R6 (This will LOAD Stack starting address (in memory: x4700) into R6)
+	STR R0, R6, #0			; Store the contents of R0 to the memory location CURRENTLY held by R6 (STORE R0 into stack area for registers (in memory: x4700) (R0 will not be restored to previous value))
+	STR R1, R6, #-1			; Store the contents of R1 to the stack using an offset 1 word behind the stack pointer in memory (STORE R1 into stack area for registers (in memory: x46FF))
+	STR R2, R6, #-2			; Store the contents of R2 to the stack using an offset 2 words behind the stack pointer in memory (STORE R2 into stack area for registers (in memory: x46FE))
+	STR R3, R6, #-3			; Store the contents of R3 to the stack using an offset 3 words behind the stack pointer in memory (STORE R3 into stack area for registers (in memory: x46FD))
+	STR R4, R6, #-4			; Store the contents of R4 to the stack using an offset 4 words behind the stack pointer in memory (STORE R4 into stack area for registers (in memory: x46FC))
+	STR R5, R6, #-5			; Store the contents of R5 to the stack using an offset 5 words behind the stack pointer in memory (STORE R5 into stack area for registers (in memory: x46FB))
+							; (You do not need to do anything for R6; R6 is already stored in stack at (in memory: x46FA) because of variable STACK_R6)
+	STR R7, R6, #-7			; Store the contents of R7 to the stack using an offset 7 words behind the stack pointer in memory (STORE R7 into stack area for registers (in memory: x46F9))
+
+	LEA R0, PROMPT			; Load the address of PROMPT into R0 (PRINT the prompt to the user) (HINT: What type of load is used to print strings?)
+	PUTS					; Call the PUTS TRAP function
+
+	LD R1, CHARACTER_COUNT	; Load the CHARACTER_COUNT variable into R1 (LOAD the character counter; we'll use this to calculate bitshifting amount and loop iterations)
+
+; Define the below label to get a character; we will need to jump to this at least 4 different times. 
+CHAR_GET 
+	GETC					; Call GETC (GET the character from the keyboard then display to console)
+	OUT						; Call the OUT TRAP function
+
+	LD R2, X_VAL			; Load the X_VAL variable into R2 (Check to see if character read was x)
+	NOT R2, R2				; Do a 2's compliment on R2 (For the next 2 instructions we will perform a 2's complement of R2. We will use R2 to get the negative value of the character, then compare it to R0)
+	ADD R2, R2, #1
+	ADD R2, R2, R0			; R2 = R0 + R2 (to do a compare of their contents)
+	BRz X_DETECTED			; Branch if ZERO to X_DETECTED label (we found an x!)
+
+	LD R2, ALPHA_VAL		; Load the variable ALPHA_VAL to R2 (Check to see if character read was alphabetical (A - F))
+	NOT R2, R2				; Do a 2's compliment on R2 (Once again, perform a 2's complement of R2 in 2 steps. Use R2 to get get negative value of character, then compare it to R0)
+	ADD R2, R2, #1
+	ADD R2, R2, R0			; R2 = R0 + R2 (to do a compare of their contents)
+	BRzp ALPHA_DETECTED		; Branch if NON-NEGATIVE to ALPHA_DETECTED
+
+	LD R2, NUMERIC_VAL		; Load the variable NUMERIC_VAL into R2 (Check to see if character read was numeric (0 - 9))
+	NOT R2, R2              ; Do a 2's complement on R2 (Once again, perform a 2's complement of R2 in 2 steps. Use R2 to get get negative value of character, then compare it to R0)
+	ADD R2, R2, #1
+	ADD R2, R2, R0			; R2 = R0 + R2 (to do a compare of their contents)
+	BRzp NUMERIC_DETECTED	; Branch if NON-NEGATIVE to NUMERIC_DETECTED
+	BR CHAR_FINISHED		; Branch unconditionally to CHAR_FINISHED (if you're still here after all those branch statements!)
+
+; ALPHA_DETECTED detects if the character was alphabetical and converts it from ASCII to HEX
+ALPHA_DETECTED
+	ADD R2, R2, #10			; Add R2 and EITHER x000A (equivalent to #10, the linefeed value on Windows) (Since we used R2 for the negative character, then added R0, adding x000A gives us the 1-digit HEX value, undoing the comparison)
+	ADD R3, R1, #-1			; R3 = R1 + #-1 (This will decrement CHARACTER_COUNT and check if a bitshift is necessary)
+	BRz CHAR_FINISHED		; Branch if ZERO to CHAR_FINISHED
+	ADD R3, R3, #-1			; Decrement R3 by #-1 (SUBTRACT 1 from R3 to run correct amounts of bitshifts)
+	BR BITSHIFT				; Branch unconditionally to the BITSHIFT label
+
+; NUMERIC_DETECTED detects if the character was numeric and converts it from ASCII to HEX
+NUMERIC_DETECTED
+	ADD R3, R1, #-1			; R3 = R1 + #-1 (Check if bitshift is necessary; since we used R2 for the negative character value, then added R0, we now have the ASCII value converted to HEX)
+	BRz CHAR_FINISHED		; Branch if ZERO to CHAR_FINISHED
+	ADD R3, R3, #-1			; Decrement R3 by #-1 (SUBTRACT 1 from R3 to run correct amounts of bitshifts)
+
+; Performs a 4-bit left shift, sometimes repeatedly. This is because we are inadvertently converting it to ASCII by shifting left 4 times. BITSHIFT using R3 which comes from R1 (the counter tracking which character out of 5)
+BITSHIFT			
+	ADD R2, R2, R2			; Add R2 to itself (1st left shift)
+	ADD R2, R2, R2			; Do it again (2nd left shift)
+	ADD R2, R2, R2			; Do it a third time (3rd left shift)
+	ADD R2, R2, R2			; Once more with feeling (4th left shift)
+	ADD R3, R3, #-1			; Decrement R3 by #-1 (ONE hex digit bitshift completed at this point; decrement BITSHIFT counter in R3)
+	BRzp BITSHIFT			; Branch if NON-NEGATIVE back to BITSHIFT (we need to shift some more)
+	BR CHAR_FINISHED		; Branch unconditionally to CHAR_FINISHED if still here
+
+; X_DETECTED and CHAR_FINISHED are the same thing with different labels. You can do this in LC-3! However; please note the Windows simulator may find this problematic. If so, please use a single label instead. 
+; X_DETECTED is an indicator that detects an x read in. This will allow us to properly read the addresses. 
+; CHAR_FINISHED indicates a character is shifted over the proper amount, and we can add it to the accumulator in R4. 
+X_DETECTED
+CHAR_FINISHED
+	ADD R4, R2, R4			; R4 = R2 + R4 (ADD the current value in R2 (the bitshifted character) to R4 (all characters))
+	ADD R1, R1, #-1			; Decrement R1 by #-1 (Decrement our counter for the loop)
+	BRp CHAR_GET			; Branch if POSITIVE to CHAR_GET
+
+	LD R0, NEWLINE_VAL		; Load the NEWLINE_VAL variable into R0 (LOAD a newline character into R0)
+	OUT						; Call the OUT trap (PRINT the newline character)
+	AND R0, R0, #0			; Clear R0
+	ADD R0, R0, R4			; R0 = R0 + R4 (PUT R4 into R0 (R0 is the output register))
+
+	; Clean up steps to restore the registers back to the way they were at the beginning (except for R0, our output)
+	LDR R1, R6, #-1			; Load the contents at the memory location 1 word behind R6 into R1 (LOAD R1 from stack area for registers (in memory: x46FF))
+	LDR R2, R6, #-2			; Load the contents at the memory location 2 words behind R6 into R2 (LOAD R2 from stack area for registers (in memory: x46FE))
+	LDR R3, R6, #-3			; Load the contents at the memory location 3 words behind R6 into R3 (LOAD R3 from stack area for registers (in memory: x46FD))
+	LDR R4, R6, #-4			; Load the contents at the memory location 4 words behind R6 into R4 (LOAD R4 from stack area for registers (in memory: x46FC))
+	LDR R5, R6, #-5			; Load the contents at the memory location 5 words behind R6 into R5 (LOAD R5 from stack area for registers (in memory: x46FB))
+	LDR R7, R6, #-7			; Load the contents at the memory location 7 words behind R6 into R7 (LOAD R7 from stack area for registers (in memory: x46F9))
+	LDR R6, R6, #-6			; Load the contents at the memory location 6 words behind R6 into R6 (LOAD R6 from stack area for registers (in memory: x46FA))
+
+	RET ; We are done
+
+; Professor + TA notes
+; --------------------------------------
+; GLOBAL VARIABLES
+STACK                   .FILL x4700	        ; DEFINES the starting address of the stack
+STACK_R6                .FILL x46FA         ; DEFINES where R6 will be stored in the stack before running
+
+CHARACTER_COUNT         .FILL #5	        ; DEFINES how many characters are expected to be inputted
+PROMPT .STRINGZ	"Enter your address: \n"	; DEFINES the string prompt
+
+X_VAL                    .FILL x0078 		; HEX value of "x" in ASCII
+ALPHA_VAL                .FILL x0041    	; HEX value of the start of UPPERCASE alphabetical HEX digits (A - F)
+NUMERIC_VAL              .FILL x0030	    ; HEX value of the start of numeric HEX digits (0 - 9)
+; Use ONLY the following value if on Windows/web sim and keep the second commented out
+NEWLINE_VAL              .FILL x000A	    ; HEX value of a new line character
+; Uncomment the below line if you are on the UNIX desktop sim and comment out the line above
+; NEWLINE_VAL               .FILL x000D       ; HEX value of a new line character 
+
+; --------------------------------------
+; REGISTER CONTENTS EXPLANATION
+; R0 = captures the character from keyboard (using GETC)
+; R1 = tracks which character we're at in the loop 5 to 0 (x, #, #, #, #)
+; R2 = used to check for x, alpha, or numeric, then convert from ASCII HEX value to HEX value
+; R3 = copies R1 and tracks how much we need to bitshift
+; R4 = holds the total bitshifted characters for each iteration of the loop
+; R5 = UNUSED
+; R6 = the stack pointer. Each address stores 1 word (two bytes). Each CPU core has one stack pointer. 
+; R7 = UNUSED
+; --------------------------------------
+
+; EXTRA CREDIT
+; I will NOT be giving you steps for these. You must do them on your own! 
+; EC1: You must only implement reading UPPERCASE hex values. If you implement
+; LOWERCASE letters as well, such as “xa1b5” then you will be given +1% extra credit to total class grade. 
+
+; If you attempt this part of the extra credit, PLEASE comment "; EC1" at the top of your file. 
+
+; HINT: check if the character is in the lower alphabetical range (lowercase characters are higher values),
+; then convert it to the uppercase version and treat it as such.
+
+; EC2: You can assume that a user will always enter a valid input. You do not have to
+; check for errors. For example if a user enters “xZ#5p” you can process it as if it was a valid input.
+; If you do implement valid input checking you will be give +2% extra credit to total class grade. 
+
+; If you attempt this part of the extra credit, PLEASE comment "; EC2" at the top of your file. 
+; HINT: one way is to do it by character! 
+
+	.END
