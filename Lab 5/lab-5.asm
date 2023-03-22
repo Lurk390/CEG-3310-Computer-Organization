@@ -97,7 +97,7 @@ WHILE_LOOP					;	START of while loop
     
     ADD R6, R6, #-1         ;	MAKE stack pointer go back one address				(R6 = x5004)
     JSR square              ;	CALL square()
-    LDR R0, R5, #7          ;	LOAD return value of square() into R0		    	(R5 = x5007)
+    LDR R0, R5, #-3          ;	LOAD return value of square() into R0		    	(R5 = x5007)
     LDR R1, R5, #-1         ;	LOAD current running sum into R1				    (R5 = x5007)
     ADD R0, R0, R1          ;	ADD current running sum to return value of squares()
     STR R0, R5, #-1         ;	STORE new sum into stack        					(R5 = x5007)
@@ -109,25 +109,25 @@ DONE
     LDR R0, R5, #-1         ;	LOAD int sum into R0								(R5 = x5007)
     STR R0, R5, #7          ;	STORE int sum into return value on stack            (R5 = x5007)
 
-    ADD R6, R6, #4          ;	MAKE stack pointer go to end of frame		        (R6 = x5007)
+    ADD R6, R6, #2          ;	MAKE stack pointer go to end of frame		        (R6 = x5007)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x5008)
-    LDR R0, R6, #-1         ;	RESTORE R0 to value stored on stack		            (R6 = x5008)
+    LDR R0, R6, #0          ;	RESTORE R0 to value stored on stack		            (R6 = x5008)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x5009)
-    LDR R1, R6, #-1         ;	RESTORE R1 to value stored on stack					(R6 = x5009)
+    LDR R1, R6, #0          ;	RESTORE R1 to value stored on stack					(R6 = x5009)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x500A)
-    LDR R2, R6, #-1         ;	RESTORE R2 to value stored on stack					(R6 = x500A)
+    LDR R2, R6, #0          ;	RESTORE R2 to value stored on stack					(R6 = x500A)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x500B)
-    LDR R3, R6, #-1         ;	RESTORE R3 to value stored on stack					(R6 = x500B)
+    LDR R3, R6, #0          ;	RESTORE R3 to value stored on stack					(R6 = x500B)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x500C)
-    LDR R5, R6, #-1         ;	RESTORE R5 to value stored on stack					(R6 = x500C)
+    LDR R5, R6, #0          ;	RESTORE R5 to value stored on stack					(R6 = x500C)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x500D)
-    LDR R7, R6, #-1         ;	RESTORE R7 to value stored on stack					(R6 = x500D)
+    LDR R7, R6, #0          ;	RESTORE R7 to value stored on stack					(R6 = x500D)
 
     ADD R6, R6, #2          ;	POP stack	                                        (R6 = x500F)
 
@@ -136,7 +136,6 @@ RET
 ; ************************************************************************************************
  
 square
-;	Your square() function starts here
     ADD R6, R6, #-1         ;	Allocate 1 word for your return value 				(R6 = x5003)
 
     STR R7, R6, #0          ;	STORE the return address in the stack	            (R6 = x5003)
@@ -176,22 +175,22 @@ MULTIPLY_LOOP
 
     ; CLEAN UP STEPS: These steps restore the stack back to the way it was when sumOfSquares() executed. 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x4FFE)
-    LDR R0, R6, #-1         ;	RESTORE R0 to value stored on stack					(R6 = x4FFE)
+    LDR R0, R6, #0          ;	RESTORE R0 to value stored on stack					(R6 = x4FFE)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x4FFF)
-    LDR R1, R6, #-1         ;	RESTORE R1 to value stored on stack					(R6 = x4FFF)
+    LDR R1, R6, #0          ;	RESTORE R1 to value stored on stack					(R6 = x4FFF)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x5000)
-    LDR R2, R6, #-1         ;	RESTORE R2 to value stored on stack					(R6 = x5000)
+    LDR R2, R6, #0          ;	RESTORE R2 to value stored on stack					(R6 = x5000)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x5001)
-    LDR R3, R6, #-1         ;	RESTORE R3 to value stored on stack					(R6 = x5001)
+    LDR R3, R6, #0          ;	RESTORE R3 to value stored on stack					(R6 = x5001)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x5002)
-    LDR R5, R6, #-1         ;	RESTORE R5 to value stored on stack					(R6 = x5002)
+    LDR R5, R6, #0          ;	RESTORE R5 to value stored on stack					(R6 = x5002)
 
     ADD R6, R6, #1          ;	MAKE stack pointer go forward one address			(R6 = x5003)
-    LDR R7, R6, #-1         ;	RESTORE R7 to value stored on stack					(R6 = x5003)
+    LDR R7, R6, #0          ;	RESTORE R7 to value stored on stack					(R6 = x5003)
 
     ADD R6, R6, #2          ;	POP stack											(R6 = x5005)
 
