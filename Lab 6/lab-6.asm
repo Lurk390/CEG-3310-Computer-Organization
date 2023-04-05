@@ -28,7 +28,7 @@ BEGINNING
     STR R1, R6, #0          ;	STORE the decimal input to fibonacci on the stack	(HINT: The value stored will be located in the destination register from the previous step.) (R6 = x5012)
     ADD R6, R6, #-1         ;	MAKE stack pointer go back one address				(R6 = x5011)
     JSR FIBONACCI           ;	CALL FIBONACCI (HINT: FIBONACCI is NOT a trap but a user function. How do we call user functions?)
-    LDR R2, R5, #-1          ;	LOAD return value of FIBONACCI into R2	(HINT: We start here after we return from FIBONACCI. Which register do we want to use to load the return value into R2? R5 or R6?)			(R5 = x5012)
+    LDR R2, R5, #-1         ;	LOAD return value of FIBONACCI into R2	(HINT: We start here after we return from FIBONACCI. Which register do we want to use to load the return value into R2? R5 or R6?)			(R5 = x5012)
     ADD R6, R6, #1          ;	POP input to FIBONACCI off the stack (HINT: Remember that the stack pointer is ALWAYS the top of the stack. If SP goes below a value, that value is no longer part of the stack (although it still remains in memory). Knowing this, how do we pop input off of the stack?) 				(R6 = x5012)
     LEA R0, PROMPT1         ;	Load the prompt into the output register (HINT: Load PROMPT1 into your output register. Which output register did we use for printing PROMPT0?)
     PUTS                    ;	Print the prompt (HINT: It's a Trap! But which one?)
@@ -81,11 +81,11 @@ CHECK_1S
     HALT                    ;	HALT the program (HINT: It's a Trap! But which one?)
  
 GLOBAL_VARS					;	Your global variables start here
-PROMPT0 		.STRINGz	"Please enter a number n: ";	The first prompt to print
+PROMPT0 		.STRINGz	"Please enter a number n: " ;	The first prompt to print
 STACK_PTR		.FILL x5013	;	STACK_PTR is a pointer to the bottom of the stack	(x5013)
 ASCII_NUM		.FILL #-48	;
-PROMPT1 		.STRINGz	"\nF(";	The second prompt
-PROMPT2 		.STRINGz	") = ";	The second prompt
+PROMPT1 		.STRINGz	"\nF(" ;	The second prompt
+PROMPT2 		.STRINGz	") = " ;	The second prompt
 PROMPT3			.STRINGz	"\n"
  
 ; ****************************************************************
@@ -137,14 +137,14 @@ FIBONACCI
     STR R0, R6, #0          ;	STORE input to fibonacci(n-1) on stack		(HINT: We are storing ON THE STACK. Which register holds input? Where is the stack pointer right now?)		(R6 = x500A)
     ADD R6, R6, #-1         ;	MAKE stack pointer go back one address				(R6 = x5009)
     JSR FIBONACCI           ;	JUMP subroutine to FIBONACCI
-    LDR R1, R5, #-1          ;	LOAD return value into R1							(R5 = x500A)
+    LDR R1, R5, #-1         ;	LOAD return value into R1							(R5 = x500A)
     ADD R6, R6, #1          ;	POP input to F(n-1)									(R6 = x500A)
     
     ADD R0, R0, #-1         ;	CALCULATE n-1-1 (n-2)	(HINT: second general case. What value is in the input register right now? How do we make it equal to (n-2)?)
     STR R0, R6, #0          ;	STORE input to fibonacci(n-2) on stack		(HINT: We are storing ON THE STACK. Which register holds input? Where is the stack pointer right now?)		(R6 = x500A)
     ADD R6, R6, #-1         ;	MAKE stack pointer go back one address				(R6 = x5009)
     JSR FIBONACCI           ;	JUMP subroutine to FIBONACCI
-    LDR R2, R5, #-1          ;	LOAD return value into R2	(HINT: Which register do we load relative to? Where is the return value in memory relative to where this register is pointing?)						(R5 = x500A)
+    LDR R2, R5, #-1         ;	LOAD return value into R2	(HINT: Which register do we load relative to? Where is the return value in memory relative to where this register is pointing?)						(R5 = x500A)
     ADD R6, R6, #1          ;	POP input to F(n-2)									(R6 = x500A)
     
     ADD R0, R1, R2          ;	ADD R1 + R2 -> R0, aka F(n-1) + F(n-2) -> R0
